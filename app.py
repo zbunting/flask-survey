@@ -27,10 +27,12 @@ def redirect_to_questions():
 
 @app.get('/questions/<int:question_num>')
 def generate_questions(question_num):
-    """Generates page for specific question """
+    """Generates page for specific question. Redirect to thankyou
+    if questions complete"""
 
-    # TODO: make sure continue can't be pressed unless
-    # an option was selected
+    # TODO: change if you go to further question
+    if question_num >= len(survey.questions):
+        return redirect('/thankyou')
     question = survey.questions[question_num]
 
     return render_template(
@@ -43,15 +45,21 @@ def generate_questions(question_num):
 def handle_answer(question_num):
     """Store answer and redirect to next questions in survey"""
 
-    # TODO: make sure we can't go out of bounds in our
-    # question list
-
     next_question_num = str(question_num + 1)
     answer = request.form.get("answer")
-
-    # does the html stop you from pressing continue without
-    # selection an option
 
     responses.append(answer)
 
     return redirect(f"/questions/{next_question_num}")
+
+
+@app.get('/thankyou')
+def show_reponses():
+    """Generates thank you page for user with list of
+    questions and answers"""
+
+    questions_num = len(survey.questions)
+    return render_template("completion.jinja",
+                           responses=responses,
+                           questions_num=questions_num,
+                           questions=survey.questions)

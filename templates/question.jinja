@@ -8,7 +8,7 @@
       <!-- you should have one item like this for every choice -->
       {% for choice in question.choices %}
       <p>
-        <input
+        <input required
             type="radio"
             name="answer"
             value="{{choice}}">
