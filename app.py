@@ -8,8 +8,6 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 debug = DebugToolbarExtension(app)
 
-responses = []
-
 
 @app.get('/')
 def index():  # verb noun function show_home
@@ -22,6 +20,8 @@ def index():  # verb noun function show_home
 def redirect_to_questions():  # bit too specific start_survey
     """Redirect to the questions page"""
 
+    session["responses"] = []
+
     return redirect("/questions/0")
 
 
@@ -30,9 +30,12 @@ def generate_questions(question_num):  # display maybe instead of generate
     """Generates page for specific question. Redirect to thankyou
     if questions complete"""
 
-    # TODO: change if you go to further question
-    if question_num >= len(survey.questions):
-        return redirect('/thankyou')
+    questions_answered = len(session["responses"])
+
+    if question_num > questions_answered:
+        return redirect(f"/questions/{str(questions_answered)}")
+    elif questions_answered >= len(survey.questions):
+        return redirect("/thankyou")
 
     question = survey.questions[question_num]
 
@@ -43,15 +46,15 @@ def generate_questions(question_num):  # display maybe instead of generate
     )
 
 
-# in theory, could go to answer /answer/99 for example
-@app.post('/answer/<int:question_num>')
-def handle_answer(question_num):  # TODO: refactor using session dict
+@app.post('/answer')
+def handle_answer():
     """Store answer and redirect to next questions in survey"""
 
-    next_question_num = str(question_num + 1)
     answer = request.form.get("answer")
+    new_responses_list = session["responses"].append(answer)
+    session["response"] = new_responses_list
 
-    responses.append(answer)
+    next_question_num = str(len(session["responses"]))
 
     return redirect(f"/questions/{next_question_num}")
 
@@ -64,7 +67,7 @@ def show_reponses():
     questions_num = len(survey.questions)
     return render_template(
         "completion.jinja",
-        responses=responses,
+        responses=session["responses"],
         questions_num=questions_num,
         questions=survey.questions
     )
