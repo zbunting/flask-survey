@@ -8,6 +8,9 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 debug = DebugToolbarExtension(app)
 
+# Good idea to include, helps VS code to help us if we misspell, updatein one spot
+RESPONSE_KEY = 'responses'
+
 
 @app.get('/')
 def index():  # verb noun function show_home
@@ -33,7 +36,9 @@ def generate_questions(question_num):  # display maybe instead of generate
     questions_answered = len(session["responses"])
 
     if question_num > questions_answered:
+        flash("DON'T TRY TO SKIP AHEAD!")
         return redirect(f"/questions/{str(questions_answered)}")
+
     elif questions_answered >= len(survey.questions):
         return redirect("/thankyou")
 
@@ -52,7 +57,8 @@ def handle_answer():
 
     answer = request.form.get("answer")
     new_responses_list = session["responses"].append(answer)
-    session["response"] = new_responses_list
+    breakpoint()
+    session["response"] = new_responses_list # TODO: worked by accident - need to pull out responses, change it, then reassign it
 
     next_question_num = str(len(session["responses"]))
 
